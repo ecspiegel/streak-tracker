@@ -1,0 +1,358 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+
+.page { padding: 1.5rem 0; }
+
+.top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.top-bar h1 { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+
+.streak-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1rem; }
+
+.streak-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; cursor: pointer; transition: border-color 0.15s; }
+.streak-card:hover { border-color: var(--color-border-secondary); }
+.streak-card.active { border-color: var(--color-border-primary); }
+
+.card-row { display: flex; align-items: center; gap: 12px; }
+.color-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.card-name { font-size: 15px; font-weight: 500; color: var(--color-text-primary); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-meta { font-size: 12px; color: var(--color-text-secondary); }
+.card-streak { display: flex; align-items: center; gap: 4px; }
+.card-streak-num { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+.card-flame { font-size: 14px; }
+.card-progress-bar { height: 4px; border-radius: 2px; background: var(--color-background-secondary); margin-top: 10px; overflow: hidden; }
+.card-progress-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+
+.add-btn { width: 100%; padding: 10px; border: 0.5px dashed var(--color-border-secondary); border-radius: var(--border-radius-lg); background: transparent; color: var(--color-text-secondary); font-size: 14px; cursor: pointer; font-family: var(--font-sans); transition: background 0.15s, color 0.15s; }
+.add-btn:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+
+.detail-panel { margin-top: 1.5rem; border-top: 0.5px solid var(--color-border-tertiary); padding-top: 1.5rem; }
+.detail-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem; }
+.detail-name-input { font-size: 18px; font-weight: 500; color: var(--color-text-primary); border: none; background: transparent; outline: none; font-family: var(--font-sans); flex: 1; min-width: 0; padding: 0; }
+.detail-name-input:focus { border-bottom: 1.5px solid #888; }
+.detail-actions { display: flex; gap: 8px; flex-shrink: 0; margin-left: 12px; }
+.icon-btn { background: none; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 4px 10px; font-size: 12px; color: var(--color-text-secondary); cursor: pointer; font-family: var(--font-sans); transition: background 0.1s; }
+.icon-btn:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+.icon-btn.danger:hover { background: #FCEBEB; color: #A32D2D; border-color: #F09595; }
+
+.req-row { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+.req-label { font-size: 13px; color: var(--color-text-secondary); }
+.req-control { display: flex; align-items: center; gap: 6px; }
+.req-btn { width: 24px; height: 24px; border-radius: 50%; border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: var(--font-sans); }
+.req-btn:hover { background: var(--color-background-secondary); }
+.req-val { font-size: 13px; font-weight: 500; color: var(--color-text-primary); min-width: 70px; }
+
+.color-row { display: flex; align-items: center; gap: 8px; margin-bottom: 1.25rem; }
+.color-swatch { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: border-color 0.15s; }
+.color-swatch.selected { border-color: var(--color-border-primary); }
+
+.stats-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 1.25rem; }
+.stat { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px; }
+.stat-val { font-size: 20px; font-weight: 500; color: var(--color-text-primary); }
+.stat-lbl { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+
+.progress-wrap { margin-bottom: 1.25rem; }
+.progress-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.progress-text { font-size: 13px; color: var(--color-text-secondary); }
+.badge { display: inline-flex; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; }
+.badge-done { background: #EAF3DE; color: #27500A; }
+.badge-prog { background: var(--color-background-secondary); color: var(--color-text-secondary); }
+.prog-track { height: 5px; background: var(--color-background-secondary); border-radius: 3px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+
+.week-section { }
+.week-section-label { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
+.day-header-row { display: grid; grid-template-columns: 60px repeat(7, 1fr); gap: 4px; margin-bottom: 4px; }
+.day-head { text-align: center; font-size: 11px; color: var(--color-text-tertiary); }
+.week-row { display: grid; grid-template-columns: 60px repeat(7, 1fr); gap: 4px; margin-bottom: 4px; align-items: center; }
+.week-lbl { font-size: 11px; color: var(--color-text-secondary); }
+.day-cell { aspect-ratio: 1; border-radius: 5px; border: 0.5px solid var(--color-border-tertiary); display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--color-text-secondary); cursor: pointer; transition: all 0.1s; position: relative; }
+.day-cell:hover { border-color: var(--color-border-secondary); }
+.day-cell.future { opacity: 0.25; cursor: default; pointer-events: none; }
+.day-cell.today { border-width: 1.5px; border-color: var(--color-border-primary); }
+.day-cell.checked { color: var(--color-text-primary); font-weight: 500; }
+.check-mark { position: absolute; bottom: 1px; right: 2px; font-size: 9px; line-height: 1; }
+
+.empty-state { text-align: center; padding: 2rem 1rem; color: var(--color-text-secondary); font-size: 14px; }
+</style>
+
+<div class="page">
+  <div class="top-bar">
+    <h1>Streak tracker</h1>
+  </div>
+
+  <div class="streak-list" id="streakList"></div>
+  <button class="add-btn" id="addBtn">+ add streak</button>
+
+  <div class="detail-panel" id="detailPanel" style="display:none;"></div>
+</div>
+
+<script>
+const COLORS = [
+  { name:'red',    fill:'#FCEBEB', border:'#E24B4A', text:'#A32D2D', dot:'#E24B4A' },
+  { name:'coral',  fill:'#FAECE7', border:'#D85A30', text:'#712B13', dot:'#D85A30' },
+  { name:'amber',  fill:'#FAEEDA', border:'#BA7517', text:'#633806', dot:'#BA7517' },
+  { name:'green',  fill:'#EAF3DE', border:'#639922', text:'#27500A', dot:'#639922' },
+  { name:'teal',   fill:'#E1F5EE', border:'#1D9E75', text:'#085041', dot:'#1D9E75' },
+  { name:'blue',   fill:'#E6F1FB', border:'#378ADD', text:'#0C447C', dot:'#378ADD' },
+  { name:'purple', fill:'#EEEDFE', border:'#7F77DD', text:'#3C3489', dot:'#7F77DD' },
+  { name:'pink',   fill:'#FBEAF0', border:'#D4537E', text:'#72243E', dot:'#D4537E' },
+];
+
+const STORE_KEY = 'mst_v1';
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch { return []; }
+}
+function save(streaks) {
+  localStorage.setItem(STORE_KEY, JSON.stringify(streaks));
+}
+
+let streaks = load();
+let activeId = streaks.length ? streaks[0].id : null;
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function defaultStreak() {
+  return { id: uid(), name: 'New streak', req: 3, colorIdx: 0, checks: [] };
+}
+
+function dateKey(d) { return d.toISOString().slice(0,10); }
+
+function getMonday(d) {
+  const dt = new Date(d); dt.setHours(0,0,0,0);
+  const day = dt.getDay();
+  dt.setDate(dt.getDate() + (day === 0 ? -6 : 1 - day));
+  return dt;
+}
+
+function weeksData(n) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const thisMonday = getMonday(today);
+  const weeks = [];
+  for (let w = n - 1; w >= 0; w--) {
+    const mon = new Date(thisMonday);
+    mon.setDate(mon.getDate() - w * 7);
+    const days = [];
+    for (let d = 0; d < 7; d++) {
+      const dt = new Date(mon);
+      dt.setDate(dt.getDate() + d);
+      days.push(dt);
+    }
+    weeks.push({ start: mon, days });
+  }
+  return weeks;
+}
+
+function checksSet(s) { return new Set(s.checks || []); }
+
+function countInWeek(s, days) {
+  const cs = checksSet(s);
+  return days.filter(d => cs.has(dateKey(d))).length;
+}
+
+function computeStreak(s, weeks) {
+  let streak = 0;
+  for (let i = weeks.length - 2; i >= 0; i--) {
+    if (countInWeek(s, weeks[i].days) >= s.req) streak++;
+    else break;
+  }
+  return streak;
+}
+
+function computeBest(s, weeks) {
+  let best = 0, cur = 0;
+  for (let i = 0; i < weeks.length - 1; i++) {
+    if (countInWeek(s, weeks[i].days) >= s.req) { cur++; if (cur > best) best = cur; }
+    else cur = 0;
+  }
+  return best;
+}
+
+function renderList() {
+  const el = document.getElementById('streakList');
+  if (!streaks.length) {
+    el.innerHTML = '<div class="empty-state">No streaks yet — add one below</div>';
+    return;
+  }
+  const weeks = weeksData(8);
+  el.innerHTML = streaks.map(s => {
+    const c = COLORS[s.colorIdx % COLORS.length];
+    const streak = computeStreak(s, weeks);
+    const thisWeek = weeks[weeks.length - 1];
+    const thisCnt = countInWeek(s, thisWeek.days);
+    const pct = Math.min(100, Math.round(thisCnt / s.req * 100));
+    const isActive = s.id === activeId;
+    return `<div class="streak-card${isActive?' active':''}" data-id="${s.id}">
+      <div class="card-row">
+        <div class="color-dot" style="background:${c.dot}"></div>
+        <div class="card-name">${s.name}</div>
+        <div class="card-meta" style="margin-right:8px;">${s.req}d/wk</div>
+        <div class="card-streak">
+          <div class="card-streak-num">${streak}</div>
+          <div class="card-flame" style="opacity:${streak>0?1:0.25}">🔥</div>
+        </div>
+      </div>
+      <div class="card-progress-bar">
+        <div class="card-progress-fill" style="width:${pct}%;background:${c.dot}"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  el.querySelectorAll('.streak-card').forEach(card => {
+    card.addEventListener('click', () => {
+      activeId = card.dataset.id;
+      renderList();
+      renderDetail();
+    });
+  });
+}
+
+function renderDetail() {
+  const panel = document.getElementById('detailPanel');
+  if (!activeId) { panel.style.display = 'none'; return; }
+  const s = streaks.find(x => x.id === activeId);
+  if (!s) { panel.style.display = 'none'; return; }
+  panel.style.display = '';
+
+  const c = COLORS[s.colorIdx % COLORS.length];
+  const weeks = weeksData(8);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const streak = computeStreak(s, weeks);
+  const best = computeBest(s, weeks);
+  const thisWeek = weeks[weeks.length - 1];
+  const thisCnt = countInWeek(s, thisWeek.days);
+  const pct = Math.min(100, Math.round(thisCnt / s.req * 100));
+  const cs = checksSet(s);
+
+  const colorSwatches = COLORS.map((col, i) =>
+    `<div class="color-swatch${i===s.colorIdx?' selected':''}" data-cidx="${i}" style="background:${col.dot};${i===s.colorIdx?`border-color:${col.dot};`:''}" title="${col.name}"></div>`
+  ).join('');
+
+  const weekRows = weeks.map((w, wi) => {
+    const isThisWeek = wi === weeks.length - 1;
+    const mon = w.start;
+    const label = isThisWeek ? 'This wk' :
+      `${mon.toLocaleString('default',{month:'short'})} ${mon.getDate()}`;
+    const wCnt = countInWeek(s, w.days);
+    const wMet = !isThisWeek && wCnt >= s.req;
+    const cells = w.days.map(dt => {
+      const k = dateKey(dt);
+      const isFuture = dt > today;
+      const isToday = dateKey(dt) === dateKey(today);
+      const checked = cs.has(k);
+      let cls = 'day-cell';
+      if (isFuture) cls += ' future';
+      if (isToday) cls += ' today';
+      if (checked) cls += ' checked';
+      const checkMark = checked ? `<span class="check-mark">✓</span>` : '';
+      const bg = checked ? `background:${c.fill};border-color:${c.border};` : '';
+      return `<div class="${cls}" data-k="${k}" style="${bg}">${dt.getDate()}${checkMark}</div>`;
+    }).join('');
+    return `<div class="week-row" style="opacity:${!isThisWeek&&!wMet&&wi<weeks.length-1?0.55:1}">
+      <div class="week-lbl">${label}</div>${cells}</div>`;
+  }).join('');
+
+  panel.innerHTML = `
+    <div class="detail-header">
+      <input class="detail-name-input" id="detailName" value="${s.name}" maxlength="40" />
+      <div class="detail-actions">
+        <button class="icon-btn danger" id="deleteBtn">delete</button>
+      </div>
+    </div>
+    <div class="color-row">
+      <span style="font-size:12px;color:var(--color-text-secondary);margin-right:4px;">Color:</span>
+      ${colorSwatches}
+    </div>
+    <div class="req-row">
+      <span class="req-label">Weekly goal:</span>
+      <div class="req-control">
+        <button class="req-btn" id="reqMinus">−</button>
+        <span class="req-val" id="reqVal">${s.req} day${s.req!==1?'s':''} / week</span>
+        <button class="req-btn" id="reqPlus">+</button>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-info">
+        <span class="progress-text">This week: ${thisCnt} of ${s.req}</span>
+        <span class="badge ${thisCnt>=s.req?'badge-done':'badge-prog'}">${thisCnt>=s.req?'complete ✓':'in progress'}</span>
+      </div>
+      <div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${c.dot}"></div></div>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-val">${streak}</div><div class="stat-lbl">current streak</div></div>
+      <div class="stat"><div class="stat-val">${best}</div><div class="stat-lbl">best streak</div></div>
+      <div class="stat"><div class="stat-val">${s.checks.length}</div><div class="stat-lbl">days checked</div></div>
+    </div>
+    <div class="week-section">
+      <div class="week-section-label">Last 8 weeks — tap to check off</div>
+      <div class="day-header-row">
+        <div></div>
+        <div class="day-head">Mon</div><div class="day-head">Tue</div><div class="day-head">Wed</div>
+        <div class="day-head">Thu</div><div class="day-head">Fri</div><div class="day-head">Sat</div>
+        <div class="day-head">Sun</div>
+      </div>
+      ${weekRows}
+    </div>
+  `;
+
+  panel.querySelector('#detailName').addEventListener('input', e => {
+    s.name = e.target.value;
+    save(streaks);
+    renderList();
+  });
+
+  panel.querySelector('#deleteBtn').addEventListener('click', () => {
+    if (confirm(`Delete "${s.name}"?`)) {
+      streaks = streaks.filter(x => x.id !== s.id);
+      activeId = streaks.length ? streaks[0].id : null;
+      save(streaks);
+      renderList();
+      renderDetail();
+    }
+  });
+
+  panel.querySelector('#reqMinus').addEventListener('click', () => {
+    if (s.req > 1) { s.req--; save(streaks); renderList(); renderDetail(); }
+  });
+  panel.querySelector('#reqPlus').addEventListener('click', () => {
+    if (s.req < 7) { s.req++; save(streaks); renderList(); renderDetail(); }
+  });
+
+  panel.querySelectorAll('.color-swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      s.colorIdx = parseInt(sw.dataset.cidx);
+      save(streaks);
+      renderList();
+      renderDetail();
+    });
+  });
+
+  panel.querySelectorAll('.day-cell').forEach(cell => {
+    cell.addEventListener('click', () => {
+      const k = cell.dataset.k;
+      const idx = s.checks.indexOf(k);
+      if (idx >= 0) s.checks.splice(idx, 1);
+      else s.checks.push(k);
+      save(streaks);
+      renderList();
+      renderDetail();
+    });
+  });
+}
+
+document.getElementById('addBtn').addEventListener('click', () => {
+  const s = defaultStreak();
+  s.colorIdx = streaks.length % COLORS.length;
+  streaks.push(s);
+  activeId = s.id;
+  save(streaks);
+  renderList();
+  renderDetail();
+  setTimeout(() => document.getElementById('detailName').focus(), 50);
+});
+
+renderList();
+renderDetail();
+</script>
